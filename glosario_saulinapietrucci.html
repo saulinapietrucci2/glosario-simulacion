@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario Cibernético - Simulación de Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --card-bg: rgba(13, 20, 38, 0.75);
+            --neon-cyan: #00f3ff;
+            --neon-purple: #b000ff;
+            --neon-pink: #ff007f;
+            --neon-green: #00ff66;
+            --text-main: #e0fbfc;
+            --text-muted: #8892b0;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(176,0,255,0.08) 0%, rgba(0,243,255,0.03) 40%, transparent 70%);
+            z-index: -2;
+            animation: pulseGlow 10s ease infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.1), inset 0 0 20px rgba(176, 0, 255, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid rgba(0, 243, 255, 0.3);
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+        }
+
+        .header h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .student-info {
+            background: rgba(0, 243, 255, 0.05);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 0 8px 8px 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.05);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 35px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            background: rgba(5, 8, 20, 0.8);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            color: var(--neon-cyan);
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .search-box input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 18px;
+            top: 18px;
+            width: 20px;
+            height: 20px;
+            fill: var(--neon-cyan);
+        }
+
+        .glossary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .term-card {
+            background: rgba(18, 26, 48, 0.6);
+            border: 1px solid rgba(176, 0, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .term-card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .term-header {
+            padding: 18px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        .term-header span.letter-badge {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-right: 15px;
+            box-shadow: 0 0 10px rgba(176, 0, 255, 0.5);
+        }
+
+        .term-header .arrow {
+            transition: transform 0.3s ease;
+            color: var(--neon-cyan);
+            font-size: 14px;
+        }
+
+        .term-card.active .term-header .arrow {
+            transform: rotate(180deg);
+        }
+
+        .term-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding 0.3s ease;
+            background: rgba(5, 8, 20, 0.5);
+            padding: 0 25px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            border-top: 0px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .term-card.active .term-body {
+            max-height: 350px;
+            padding: 20px 25px 25px 25px;
+            border-top: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .example-box {
+            margin-top: 15px;
+            background: rgba(0, 243, 255, 0.05);
+            padding: 12px 18px;
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .example-box strong {
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--neon-pink);
+            font-family: 'Orbitron', sans-serif;
+            display: none;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient-glow"></div>
+
+<div class="container">
+    <div class="header">
+        <h3>Universidad Gran Mariscal de Ayacucho • Ing. de Sistemas</h3>
+        <h1>Glosario Cibernético de Simulación</h1>
+    </div>
+
+    <div class="student-info">
+        <div><strong>ELABORADO POR:</strong> Saulina Pietrucci (C.I: 26.449.141)</div>
+        <div><strong>PROFESORA:</strong> Huvilmar Salazar</div>
+    </div>
+
+    <div class="search-box">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" id="searchInput" placeholder="BUSCAR TÉRMINO (Ej. Cola, Monte Carlo, Réplica)..." onkeyup="filterTerms()">
+    </div>
+
+    <div class="glossary-list" id="glossaryList">
+
+        <div class="term-card" data-term="acumulador estadístico">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">A</span> Acumulador Estadístico</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Variable auxiliar dentro del programa de simulación encargada de almacenar sumas o integrales temporales necesarias para calcular las métricas de rendimiento del sistema al final del experimento.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="atributo">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">A</span> Atributo</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Propiedad o característica individual asignada a una entidad específica que permite diferenciarla de otras entidades de la misma clase (ej. prioridad, tiempo de llegada).
+            </div>
+        </div>
+
+        <div class="term-card" data-term="calendario de eventos lista de eventos">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">C</span> Calendario de Eventos (Lista de Eventos)</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Estructura de datos ordenada cronológicamente que almacena los instantes futuros en los que está programada la ocurrencia de cada uno de los eventos en el tiempo.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="cola queue">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">C</span> Cola (Queue)</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Espacio o estructura de almacenamiento en el modelo donde las entidades deben aguardar o hacer espera cuando el recurso que requieren no se encuentra disponible inmediatamente.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="entidad">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">E</span> Entidad</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Objeto dinámico dentro del modelo de simulación que se crea, circula a través del sistema cambiando de atributos, interactúa con recursos y finalmente es destruido o abandona el sistema.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="estado estacionario">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">E</span> Estado Estacionario</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Condición de un sistema dinámico en la cual sus métricas estadísticas y comportamiento probabilístico se vuelven independientes de las condiciones iniciales tras transcurrir un periodo de tiempo prolongado.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="evento">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">E</span> Evento</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Suceso o acontecimiento instantáneo en la escala de tiempo simulada que modifica de forma puntual el valor de las variables de estado, atributos o contadores del sistema.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="generador de numeros seudoaleatorios">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">G</span> Generador de Números Seudoaleatorios</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Algoritmo aritmético determinista que produce secuencias numéricas en el intervalo [0, 1] que simulan las propiedades estadísticas de independencia y uniformidad.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="inferencia de entradas ajuste de distribuciones">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">I</span> Inferencia de Entradas (Ajuste de Distribuciones)</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Procedimiento estadístico mediante el cual se selecciona una familia de distribuciones de probabilidad, se estiman sus parámetros y se valida la bondad del ajuste a partir de datos empíricos recolectados del sistema real.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="marco experimental">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Marco Experimental</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Conjunto de condiciones, variables de entrada y restricciones bajo las cuales un modelo de simulación es válido para ser ejercitado y estudiado.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="metodo de monte carlo">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Método de Monte Carlo</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Técnica de simulación estática que utiliza la generación de números aleatorios y el muestreo de distribuciones de probabilidad para resolver problemas matemáticos o analizar sistemas estocásticos independientes del tiempo.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="modelo">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Modelo</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Representación abstracta, simplificada y conceptual de un sistema real o hipotético, desarrollada con la finalidad de predecir o estudiar su comportamiento dentro de un contexto o marco experimental delimitado sin alterar el sistema real.
+                <div class="example-box"><strong>EJEMPLO PRÁCTICO:</strong> Un script en Python o software de simulación que modela el flujo de paquetes de datos en un enrutador.</div>
+            </div>
+        </div>
+
+        <div class="term-card" data-term="modelo determinista">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Modelo Determinista</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Tipo de modelo matemático en el cual todas las variables e insumos de entrada son conocidos con certeza en cada instante de tiempo, por lo que una misma entrada siempre producirá exactamente la misma salida.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="modelo dinamico">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Modelo Dinámico</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Representación de un sistema cuyas variables de estado evolucionan y cambian sus valores progresivamente a lo largo de la escala temporal.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="modelo estatico">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Modelo Estático</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Representación de un sistema en un instante de tiempo fijo o específico, donde el transcurso del tiempo no juega un rol relevante en la estructura del problema.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="modelo estocastico">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">M</span> Modelo Estocástico</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Modelo matemático que incorpora una o más variables aleatorias en sus entradas, lo que provoca que los resultados de salida presenten incertidumbre y deban analizarse mediante técnicas estadísticas.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="recurso">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">R</span> Recurso</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Componente del sistema con capacidad delimitada (equipo, personal, espacio) que es solicitado, capturado y retenido por una entidad para recibir un servicio y liberado al finalizar dicho proceso.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="reloj de simulacion">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">R</span> Reloj de Simulación</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Variable del modelo que registra y lleva el control del avance del tiempo simulado durante la ejecución del experimento.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="replica">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">R</span> Réplica</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Ejecución independiente de una corrida de simulación que utiliza el mismo modelo pero con una secuencia única e independiente de números aleatorios.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="simulacion">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">S</span> Simulación</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Experimento numérico o computacional realizado sobre un modelo matemático a fin de analizar y comprender el comportamiento de un sistema a lo largo del tiempo o bajo condiciones específicas que no pueden resolverse analíticamente.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="sistema">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">S</span> Sistema</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Conjunto de objetos, componentes o entidades interrelacionadas sobre las cuales se ejerce un estudio para analizar su comportamiento o responder preguntas específicas bajo distintas condiciones. Se delimita formalmente mediante variables de entrada (controlables y no controlables), variables de estado e indicadores de desempeño.
+                <div class="example-box"><strong>EJEMPLO PRÁCTICO:</strong> La red de servidores de una base de datos distribuida.</div>
+            </div>
+        </div>
+
+        <div class="term-card" data-term="sistema de eventos discretos">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">S</span> Sistema de Eventos Discretos</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Sistema cuyos cambios de estado ocurren únicamente en instantes puntuales y separados de tiempo, provocados por la ocurrencia de sucesos específicos (eventos).
+            </div>
+        </div>
+
+        <div class="term-card" data-term="validacion">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">V</span> Validación</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Proceso continuo de evaluación mediante el cual se comprueba si el modelo representa con suficiente precisión al sistema real para cumplir con los objetivos específicos del estudio.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="variable de estado">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">V</span> Variable de Estado</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Conjunto de magnitudes globales que describen la condición o situación interna del sistema en un instante de tiempo determinado, permitiendo determinar su comportamiento futuro junto con las entradas.
+            </div>
+        </div>
+
+        <div class="term-card" data-term="verificacion">
+            <div class="term-header" onclick="toggleCard(this)">
+                <div><span class="letter-badge">V</span> Verificación</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div class="term-body">
+                Proceso de comprobación técnica dirigido a asegurar que el modelo conceptual fue traducido y codificado correctamente en el lenguaje o entorno de programación sin errores de lógica ni de sintaxis.
+            </div>
+        </div>
+
+    </div>
+
+    <div class="no-results" id="noResults">⚠ [ ERROR: 404 ] - TÉRMINO NO ENCONTRADO EN LA RED ⚠</div>
+</div>
+
+<script>
+    function toggleCard(header) {
+        const card = header.parentElement;
+        const isActive = card.classList.contains('active');
+        
+        document.querySelectorAll('.term-card').forEach(c => c.classList.remove('active'));
+
+        if (!isActive) {
+            card.classList.add('active');
+        }
+    }
+
+    function filterTerms() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.term-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const term = card.getAttribute('data-term');
+            if (term.includes(input)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('noResults');
+        if (visibleCount === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
